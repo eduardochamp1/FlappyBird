@@ -39,9 +39,6 @@ function ParDeBarreiras(altura, abertura, x) {
   this.setX(x)
 }
 
-// const b = new ParDeBarreiras(700, 200, 800)
-// document.querySelector('[wm-flappy]').appendChild(b.elemento)
-
 function Barreiras(altura, largura, abertura, espaco, notificarPonto) {
   this.pares = [
     new ParDeBarreiras(altura, abertura, largura),
@@ -97,8 +94,6 @@ function Passaro(alturaJogo) {
 
 
 
-
-
 function Progresso() {
   this.elemento = novoElemento('span', 'progresso')
   this.atualizarPontos = pontos => {
@@ -106,7 +101,6 @@ function Progresso() {
   }
   this.atualizarPontos(0)
 }
-
 
 // const barreiras = new Barreiras(700, 1100, 200, 400)
 // const passaro = new Passaro(700)
@@ -118,6 +112,29 @@ function Progresso() {
 //   barreiras.animar()
 //   passaro.animar()
 // }, 20)
+
+function estaoSobrepostos(elementoA, elementoB) {
+  const a = elementoA.getBoundingClientRect();
+  const b = elementoB.getBoundingClientRect();
+
+  const horizontal = a.left + a.width >= b.left
+    && b.left + b.width >= a.left;
+  const vertical = a.top + a.height >= b.top
+    && b.top + b.height >= a.top;
+  return horizontal && vertical;
+}
+
+function colidiu(passaro, barreiras) {
+  let colidiu = false
+  barreiras.pares.forEach(parDeBarreiras => {
+    if (!colidiu) {
+      const superior = parDeBarreiras.superior.elemento
+      const inferior = parDeBarreiras.inferior.elemento
+      colidiu = estaoSobrepostos(passaro.elemento, superior) || estaoSobrepostos(passaro.elemento, inferior)
+    }
+  })
+  return colidiu
+}
 
 
 function FlappyBird() {
@@ -141,6 +158,10 @@ function FlappyBird() {
     const temporizador = setInterval(() => {
       barreiras.animar()
       passaro.animar()
+
+      if (colidiu(passaro, barreiras)) {
+        clearInterval(temporizador)
+      }
     }, 20)
   }
 }
